@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Мини-диагностика «Сила рода»</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8e6f0 0%, #d8d4e8 100%);
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            padding: 20px;
+            color: #2d2a3d;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: linear-gradient(145deg, #ffffff 0%, #f9f8ff 100%);
+            border-radius: 32px;
+            box-shadow: 0 12px 32px rgba(80, 60, 120, 0.15);
+            overflow: hidden;
+            padding: 24px 20px 40px;
+            border: 1px solid rgba(160, 140, 200, 0.3);
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 600;
+            line-height: 1.3;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #4a3a6e;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .subhead {
+            text-align: center;
+            font-size: 15px;
+            color: #7a6a9a;
+            border-bottom: 1px solid #e3dfef;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+
+        .label {
+            font-weight: 600;
+            margin: 16px 0 6px 0;
+            font-size: 15px;
+            color: #4a3a6e;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 16px;
+            border: 1px solid #cdc6e0;
+            border-radius: 24px;
+            background: #fff;
+            transition: 0.2s;
+            font-family: inherit;
+            color: #2d2a3d;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #9b7fcb;
+            box-shadow: 0 0 0 3px rgba(130, 100, 180, 0.15);
+        }
+
+        .btn {
+            background: linear-gradient(95deg, #6b5b95 0%, #8b7ab8 100%);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 40px;
+            margin: 28px 0 20px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-family: inherit;
+            box-shadow: 0 4px 12px rgba(80, 60, 120, 0.25);
+        }
+
+        .btn:hover {
+            background: linear-gradient(95deg, #7b6ba5 0%, #9b8bc8 100%);
+            transform: translateY(-1px);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(0px);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid #e2dcf0;
+            box-shadow: 0 6px 14px rgba(90, 70, 130, 0.05);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #4a3a6e;
+            border-left: 4px solid #b8a8e0;
+            padding-left: 14px;
+        }
+
+        .footer-btn {
+            background: #e8e2f6;
+            color: #4a3a6e;
+            box-shadow: none;
+            margin-top: 10px;
+        }
+
+        .footer-btn:hover {
+            background: #dbd2f0;
+            transform: translateY(-1px);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .calc-numbers {
+            background: #f2eff9;
+            padding: 12px 16px;
+            border-radius: 20px;
+            font-family: monospace;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #4a3a6e;
+            font-weight: 500;
+            border: 1px solid #ddd6ef;
+        }
+
+        @media (max-width: 550px) {
+            .container {
+                padding: 18px 16px 30px;
+            }
+            .card-title {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="app">
+    <!-- ЭКРАН 1: ВХОДНЫЕ ДАННЫЕ -->
+    <div id="screen1">
+        <h1>🧬 Мини-диагностика «Сила рода»</h1>
+        <div class="subhead">от нумеролога Евгении Абдуллиной</div>
+        <p style="margin-bottom: 8px;"><strong>Дата рождения</strong> показывает не только личную программу человека, но и его связь с родом.</p>
+        <p style="color: #5e4e82; margin-bottom: 24px;">В этой мини-диагностике вы получите первую подсказку о своей роли в родовой системе, увидите тип финансового родового канала, а также поймёте, какие ещё родовые блоки важно разобрать глубже.</p>
+
+        <div class="label">Дата рождения</div>
+        <input type="text" id="birthdate" placeholder="ДД.ММ.ГГГГ" autocomplete="off">
+
+        <div class="label">Пол</div>
+        <select id="gender">
+            <option value="Ж">Женский</option>
+            <option value="М">Мужской</option>
+        </select>
+
+        <button class="btn" id="calculateBtn">РАССЧИТАТЬ МОЮ РОДОВУЮ ПОДСКАЗКУ</button>
+    </div>
+
+    <!-- ЭКРАН 2: РЕЗУЛЬТАТЫ -->
+    <div id="screen2" class="hidden">
+        <div class="calc-numbers" id="displayDateAndNumbers"></div>
+
+        <!-- Карточка 1: роли -->
+        <div class="card">
+            <div class="card-title">Родовая роль</div>
+            <div id="roleKMR"></div>
+            <div id="roleKeeper" style="margin-top: 16px;"></div>
+            <div id="roleHealer" style="margin-top: 16px;"></div>
+        </div>
+
+        <!-- Карточка 2: финансовый канал -->
+        <div class="card">
+            <div class="card-title">Тип финансового родового канала</div>
+            <div id="financeType"></div>
+            <div style="margin-top: 16px;"><strong>Ключ к раскрытию финансового родового канала</strong><br>🔒 Описание закрыто</div>
+        </div>
+
+        <!-- Закрытая карточка -->
+        <div class="card">
+            <div class="card-title">Личная финансовая программа</div>
+            🔒 Описание закрыто
+        </div>
+
+        <!-- Карточка 3: родовое наследие №1 -->
+        <div class="card">
+            <div class="card-title">Родовое наследие №1</div>
+            <div id="heritageText"></div>
+        </div>
+
+        <!-- Блок ЗАКРЫТЫХ карточек -->
+        <div class="card">
+            <div class="card-title">🔒 Родовое наследие №2</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Родовое наследие №3</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Родовое наследие №4</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Духовная задача рода по линии отца</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Духовная задача рода по линии матери</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Материальная задача рода по линии отца</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Материальная задача рода по линии матери</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Ключ к реализации задач рода</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Влияние с прошлого воплощения</div>
+            Описание закрыто
+        </div>
+        <div class="card">
+            <div class="card-title">🔒 Ваш код судьбы</div>
+            Описание закрыто
+        </div>
+
+        <div style="background: #efebf8; border-radius: 20px; padding: 18px; margin: 16px 0;">
+            <p><strong>📌 Для полного анализа важно смотреть и соединять все программы между собой.</strong><br>
+            Зная всё это, вам будет легче понять, как воспользоваться ключом к реализации всех ваших задач.</p>
+        </div>
+
+        <button class="btn" id="wantDecryptBtn">КАК ПОЛУЧИТЬ ПОЛНУЮ РАСШИФРОВКУ</button>
+        <button class="btn footer-btn" id="backBtn">◀ Вернуться назад</button>
+    </div>
+</div>
+
+<script>
+    // Функция расчёта 4 рабочих чисел
+    function calculateWorkerNumbers(day, month, year) {
+        const isAfter2000 = year >= 2000;
+        const digits = String(day).padStart(2,'0').split('').concat(
+                       String(month).padStart(2,'0').split(''),
+                       String(year).split(''));
+        const sumAll = digits.reduce((s,v)=> s + Number(v), 0);
+        let n1 = sumAll;
+        let n2 = String(n1).split('').reduce((s,v)=> s + Number(v), 0);
+        let n3, n4;
+        if(!isAfter2000){
+            const firstDigitOfDay = Number(String(day)[0]);
+            n3 = n1 - 2 * firstDigitOfDay;
+            n4 = String(Math.abs(n3)).split('').reduce((s,v)=> s + Number(v), 0);
+        } else {
+            n3 = n1 + 19;
+            n4 = String(n3).split('').reduce((s,v)=> s + Number(v), 0);
+        }
+        return { n1, n2, n3, n4 };
+    }
+
+    // 1. КМР: отсутствие 5 и 8 в дате + 4 числах (только женщины)
+    function isKMR(day, month, year, n1, n2, n3, n4, gender) {
+        if(gender !== 'Ж') return false;
+        const dateStr = `${day}${month}${year}`;
+        const numbersStr = `${n1}${n2}${n3}${n4}`;
+        const has5 = (dateStr+numbersStr).includes('5');
+        const has8 = (dateStr+numbersStr).includes('8');
+        return (!has5 || !has8);
+    }
+
+    // 2. Хранитель рода: n2 = 11 и n4 = 9
+    function isKeeper(n2, n4) {
+        return (n2 === 11 && n4 === 9);
+    }
+
+    // 3. Целитель рода: n2 = 11 и n4 = 7
+    function isHealer(n2, n4) {
+        return (n2 === 11 && n4 === 7);
+    }
+
+    // Подсчёт семёрок
+    function countSevens(day, month, year, n1, n2, n3, n4) {
+        const all = `${day}${month}${year}${n1}${n2}${n3}${n4}`;
+        return (all.match(/7/g) || []).length;
+    }
+
+    // Финансовый канал
+    function getFinanceType(day, month, year, n1, n2, n3, n4) {
+        const all = `${day}${month}${year}${n1}${n2}${n3}${n4}`;
+        const count4 = (all.match(/4/g) || []).length;
+        const count5 = (all.match(/5/g) || []).length;
+        const count6 = (all.match(/6/g) || []).length;
+        const total = count4+count5+count6;
+        if(total === 0) return "Канал нищеты";
+        if(total === 1) return "Канал бедности";
+        if(total === 2) return "Канал достатка";
+        if(total === 3) return "Канал процветания";
+        if(total === 4) return "Канал богатства";
+        if(total >= 5) return "Канал роскоши";
+        return "Канал достатка";
+    }
+
+    function getFinanceDescription(type) {
+        const map = {
+            "Канал нищеты": "род растратил ресурсы, поэтому человеку приходится начинать финансовую жизнь с нуля или даже с минуса. Здесь важно включаться, нарабатывать финансовую грамотность и прорабатывать личную финансовую программу.",
+            "Канал бедности": "минимальный уровень обеспеченности по роду есть, но выйти на больший доход может быть непросто. Здесь важен сильный личный импульс, грамотные действия или партнёр с большим ресурсом.",
+            "Канал достатка": "в роду уже наработан базовый финансовый ресурс. Человеку легче закрывать основные потребности, но важно не растратить то, что передано, и учиться грамотно распоряжаться деньгами.",
+            "Канал процветания": "в роду наработан хороший финансовый потенциал, но при этом есть нестабильность. Деньги приходят, но важно научиться удерживать ресурс и не уходить в резкие взлёты и падения.",
+            "Канал богатства": "в роду наработан сильный финансовый потенциал. Здесь важно понимать, как правильно пользоваться этим ресурсом, не сливать его через личные программы и направлять деньги в развитие.",
+            "Канал роскоши": "по роду передан очень сильный материальный ресурс. Но такой канал тоже требует грамотного отношения. Его важно удерживать, усиливать и использовать без хаоса, растрат и внутреннего перекоса."
+        };
+        return map[type] || map["Канал достатка"];
+    }
+
+    // Родовое наследие №1
+    function getHeritageText(sevenCount) {
+        if(sevenCount === 1) {
+            return `🔹 У вас в родовом наследии проявлена энергия защиты.\n\nЭто означает, что у вас есть Ангел-хранитель. Вы можете чувствовать незримую поддержку в сложных ситуациях. Род передал вам базовый уровень защищённости, но важно научиться слышать свои внутренние подсказки и доверять интуиции.`;
+        }
+        if(sevenCount === 2) {
+            return `🔹 У вас в родовом наследии проявлена энергия защиты.\n\nПомимо Ангела-хранителя, вас оберегает кто-то из вашего рода. Это может быть ушедший родственник, который становится вашим хранителем. Такая защита считается намоленной — она сильнее обычной. Вы можете чувствовать присутствие «невидимого плеча» в моменты опасности или сложного выбора.`;
+        }
+        if(sevenCount >= 3) {
+            return `🔹 У вас в родовом наследии проявлена энергия защиты.\n\nВы — человек-талисман. Рядом с вами другим людям везёт, даже если вы сами этого не замечаете. Ваша защита настолько сильна, что распространяется на окружающих. Важно: удача приходит к вам через других людей. Если вы замыкаетесь в себе, канал защиты может ослабевать. Делитесь светом — и защита только растёт.`;
+        }
+        return `🔹 Энергия защиты в вашем родовом наследии не проявлена.\n\nДо 26 лет вас сохраняет Вселенная — это время, когда ошибки прощаются, а удача приходит сама. После 26 защиту важно нарабатывать осознанно: через добрые мысли, поступки и укрепление связи с родом. Осуждение, негатив и жалобы будут снимать защиту. Позитивный настрой, напротив, усиливает ваш энергетический кокон.`;
+    }
+
+    document.getElementById('calculateBtn').addEventListener('click', () => {
+        const birthStr = document.getElementById('birthdate').value.trim();
+        const gender = document.getElementById('gender').value;
+
+        if(!birthStr.match(/\d{2}\.\d{2}\.\d{4}/)) {
+            alert("Введите дату рождения в формате ДД.ММ.ГГГГ");
+            return;
+        }
+        const [day, month, year] = birthStr.split('.').map(Number);
+        if(day<1 || day>31 || month<1 || month>12 || year<1900 || year>2026) {
+            alert("Некорректная дата рождения");
+            return;
+        }
+
+        const { n1, n2, n3, n4 } = calculateWorkerNumbers(day, month, year);
+        const kmrFlag = isKMR(day, month, year, n1, n2, n3, n4, gender);
+        const keeperFlag = isKeeper(n2, n4);
+        const healerFlag = isHealer(n2, n4);
+        const sevenCount = countSevens(day, month, year, n1, n2, n3, n4);
+        const financeType = getFinanceType(day, month, year, n1, n2, n3, n4);
+        const financeDesc = getFinanceDescription(financeType);
+        const heritageText = getHeritageText(sevenCount);
+
+        document.getElementById('displayDateAndNumbers').innerHTML = `${n1}, ${n2}, ${n3}, ${n4}`;
+        
+        let kmrHtml = '';
+        if(kmrFlag) {
+            kmrHtml = `<strong>✨ Кризис-менеджер рода</strong><br>
+            В роду накопилось много нерешённых задач, и именно вам предстоит разорвать старые сценарии, изменить родовые программы.<br><br>
+            С детства вы чувствовали, что вы другая. С одной стороны, вам нельзя полностью отдаляться от рода, но и тащить всех на себе вы тоже не должны.<br><br>
+            Ваша задача — не сбежать, а возродить.`;
+        }
+        
+        let keeperHtml = '';
+        if(keeperFlag) {
+            keeperHtml = `<strong>✨ Хранитель рода</strong><br>
+            Вы — человек, который держит связь поколений. Вы помните истории, храните традиции, передаёте дальше то, что важно.<br><br>
+            Ваша задача — не просто знать, а передавать. Через вас род не теряет себя. Без Хранителя род забывает свои корни и рассыпается.`;
+        }
+        
+        let healerHtml = '';
+        if(healerFlag) {
+            healerHtml = `<strong>✨ Целитель рода</strong><br>
+            Рядом с вами людям становится легче. Вы снимаете боль, даже не прикасаясь — через слово, взгляд или просто присутствие.<br><br>
+            Ваша задача — исцелять родовые раны. Но важно не брать на себя чужую боль и не сгорать в процессе. Целитель тоже нуждается в защите.`;
+        }
+
+        if(!kmrFlag && !keeperFlag && !healerFlag) {
+            kmrHtml = `По базовому расчёту вы не Кризис-менеджер рода<br><br>
+            Это не значит, что у вас нет родовой задачи. Просто ваша функция — другая.<br><br>
+            Не всем нужно вытаскивать род из кризиса.<br>
+            У кого-то задача связана с сохранением и укреплением рода, передачей опыта, восстановлением связи поколений или раскрытием ресурса, который уже есть в роду.<br><br>
+            Чтобы понять точнее, нужно смотреть всю родовую программу.`;
+        }
+
+        document.getElementById('roleKMR').innerHTML = kmrHtml;
+        document.getElementById('roleKeeper').innerHTML = keeperHtml;
+        document.getElementById('roleHealer').innerHTML = healerHtml;
+        document.getElementById('financeType').innerHTML = `<strong>${financeType}</strong><br>${financeDesc}`;
+        document.getElementById('heritageText').innerHTML = heritageText;
+
+        document.getElementById('screen1').classList.add('hidden');
+        document.getElementById('screen2').classList.remove('hidden');
+    });
+
+    document.getElementById('backBtn').addEventListener('click', () => {
+        document.getElementById('screen2').classList.add('hidden');
+        document.getElementById('screen1').classList.remove('hidden');
+    });
+
+    document.getElementById('wantDecryptBtn').addEventListener('click', () => {
+      window.location.href = "https://vk.com/app6379730_-211396456#l=4&auto=1";
+    });
+</script>
+</body>
+</html>
