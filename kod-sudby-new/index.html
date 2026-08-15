@@ -300,8 +300,7 @@ h1{
     0 0 0 1px rgba(255,255,255,.28),
     0 0 18px rgba(255,255,255,.14),
     inset 0 0 16px rgba(231,198,106,.08);
-  cursor:grab;
-  touch-action:none;
+  pointer-events:none;
 }
 .new-orb:after{
   content:"";
@@ -309,12 +308,6 @@ h1{
   inset:4px;
   border-radius:50%;
   border-top:1px solid rgba(255,255,255,.32);
-}
-.new-orb:active{cursor:grabbing}
-.new-orb.dragging{
-  z-index:100;
-  outline:1px dashed rgba(255,255,255,.8);
-  outline-offset:4px;
 }
 @media(max-width:600px){
   .new-orb{width:30px;height:30px;font-size:14px}
@@ -891,8 +884,7 @@ allOrbs.forEach((orb, i) => {
 });
 
 
-/* ===== ВРЕМЕННОЕ ПЕРЕТАСКИВАНИЕ НОВЫХ КРУГОВ ===== */
-const NEW_LAYOUT_KEY = 'lichny_kod_new_orbs_v3';
+/* ===== ЗАФИКСИРОВАННАЯ АДАПТИВНАЯ РАССТАНОВКА БЕЛЫХ КРУГОВ ===== */
 
 const NEW_DEFAULTS = {
   "u25_1": {
@@ -979,152 +971,38 @@ const NEW_DEFAULTS = {
 
 const newOrbs = [...document.querySelectorAll('.new-orb')];
 
-function getSavedNewLayout(){
-  try{
-    return JSON.parse(localStorage.getItem(NEW_LAYOUT_KEY) || 'null');
-  }catch(e){
-    return null;
-  }
-}
+const NEW_LAYOUT_REFERENCE = {
+  age: {width:325, height:275},
+  mission: {width:784, height:230},
+  orbSize:34
+};
 
-function applyNewLayout(layout){
+function applyNewLayout(){
   newOrbs.forEach(orb=>{
     const id = orb.dataset.newId;
-    const pos = (layout && layout[id]) || NEW_DEFAULTS[id] || {x:0,y:0};
-    orb.style.left = pos.x + 'px';
-    orb.style.top = pos.y + 'px';
+    const pos = NEW_DEFAULTS[id] || {x:0,y:0};
+    const panel = orb.closest('.age-panel, .mission-panel');
+    if(!panel) return;
+
+    const isMission = panel.classList.contains('mission-panel');
+    const reference = isMission ? NEW_LAYOUT_REFERENCE.mission : NEW_LAYOUT_REFERENCE.age;
+    const panelRect = panel.getBoundingClientRect();
+    const orbSize = orb.getBoundingClientRect().width || NEW_LAYOUT_REFERENCE.orbSize;
+    const scaleX = panelRect.width / reference.width;
+    const scaleY = panelRect.height / reference.height;
+
+    const centerX = (pos.x + NEW_LAYOUT_REFERENCE.orbSize / 2) * scaleX;
+    const centerY = (pos.y + NEW_LAYOUT_REFERENCE.orbSize / 2) * scaleY;
+
+    orb.style.left = Math.round(centerX - orbSize / 2) + 'px';
+    orb.style.top = Math.round(centerY - orbSize / 2) + 'px';
     orb.dataset.x = pos.x;
     orb.dataset.y = pos.y;
   });
 }
 
-function saveNewLayout(){
-  const data = {};
-  newOrbs.forEach(orb=>{
-    data[orb.dataset.newId] = {
-      x:Number(orb.dataset.x || 0),
-      y:Number(orb.dataset.y || 0)
-    };
-  });
-  localStorage.setItem(NEW_LAYOUT_KEY, JSON.stringify(data));
-  return data;
-}
-
-const NEW_LINE_TARGETS = {
-  u25_1:{panel:'u25', target:0},
-  u25_2:{panel:'u25', target:0},
-  u25_3:{panel:'u25', target:2},
-  u25_4:{panel:'u25', target:2},
-  u25_5:{panel:'u25', target:4},
-  u25_6:{panel:'u25', target:4},
-  u25_7:{panel:'u25', target:1},
-  u25_8:{panel:'u25', target:1},
-
-  a2535_1:{panel:'a2535', target:0},
-  a2535_2:{panel:'a2535', target:0},
-  a2535_3:{panel:'a2535', target:2},
-  a2535_4:{panel:'a2535', target:2},
-  a2535_5:{panel:'a2535', target:4},
-  a2535_6:{panel:'a2535', target:4},
-  a2535_7:{panel:'a2535', target:1},
-  a2535_8:{panel:'a2535', target:1},
-
-  m35_1:{panel:'m35', target:0},
-  m35_2:{panel:'m35', target:0},
-  m35_3:{panel:'m35', target:1},
-  m35_4:{panel:'m35', target:1}
-};
-
-function centerInPanel(el, panel){
-  const r = el.getBoundingClientRect();
-  const p = panel.getBoundingClientRect();
-  return {
-    x: r.left - p.left + r.width/2,
-    y: r.top - p.top + r.height/2
-  };
-}
-
-function updateNewLines(){
-  const agePanels = document.querySelectorAll('.age-panel');
-  const under25Panel = agePanels[0];
-  const age2535Panel = agePanels[1];
-  const missionPanel = document.querySelector('.mission-panel');
-
-  const panelMap = {
-    u25: under25Panel,
-    a2535: age2535Panel,
-    m35: missionPanel
-  };
-
-  const targetOrbs = {
-    u25: under25Panel ? under25Panel.querySelectorAll('.age-grid .orb') : [],
-    a2535: age2535Panel ? age2535Panel.querySelectorAll('.age-grid .orb') : [],
-    m35: missionPanel ? missionPanel.querySelectorAll('.mission-grid > .orb') : []
-  };
-
-  document.querySelectorAll('.new-links line').forEach(line=>{
-    const id = line.dataset.lineId;
-    const map = NEW_LINE_TARGETS[id];
-    if(!map) return;
-
-    const panel = panelMap[map.panel];
-    const newOrb = document.querySelector(`.new-orb[data-new-id="${id}"]`);
-    const target = targetOrbs[map.panel][map.target];
-    if(!panel || !newOrb || !target) return;
-
-    const a = centerInPanel(newOrb, panel);
-    const b = centerInPanel(target, panel);
-
-    line.setAttribute('x1', a.x.toFixed(1));
-    line.setAttribute('y1', a.y.toFixed(1));
-    line.setAttribute('x2', b.x.toFixed(1));
-    line.setAttribute('y2', b.y.toFixed(1));
-  });
-}
-
-applyNewLayout(getSavedNewLayout());
-updateNewLines();
-
-
-let activeNew = null;
-let startNX=0, startNY=0, baseNX=0, baseNY=0;
-
-document.addEventListener('pointerdown', e=>{
-  const orb = e.target.closest('.new-orb');
-  if(!orb) return;
-  activeNew = orb;
-  startNX = e.clientX;
-  startNY = e.clientY;
-  baseNX = Number(orb.dataset.x || 0);
-  baseNY = Number(orb.dataset.y || 0);
-  orb.classList.add('dragging');
-  orb.setPointerCapture?.(e.pointerId);
-  e.preventDefault();
-});
-
-document.addEventListener('pointermove', e=>{
-  if(!activeNew) return;
-  const x = Math.round(baseNX + e.clientX - startNX);
-  const y = Math.round(baseNY + e.clientY - startNY);
-  activeNew.style.left = x + 'px';
-  activeNew.style.top = y + 'px';
-  activeNew.dataset.x = x;
-  activeNew.dataset.y = y;
-  updateNewLines();
-  e.preventDefault();
-});
-
-function finishNewDrag(){
-  if(!activeNew) return;
-  activeNew.classList.remove('dragging');
-  activeNew = null;
-  saveNewLayout();
-  updateNewLines();
-}
-document.addEventListener('pointerup', finishNewDrag);
-document.addEventListener('pointercancel', finishNewDrag);
-
-window.addEventListener('resize', updateNewLines);
+applyNewLayout();
+window.addEventListener('resize', applyNewLayout);
 </script>
 </body>
 </html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
