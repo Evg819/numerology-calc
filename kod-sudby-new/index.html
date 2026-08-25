@@ -67,12 +67,32 @@ h1{
 .input-block{width:360px;margin:14px auto 6px;text-align:center}
 .input-label{font:700 16px/1.2 system-ui,sans-serif;color:#e2c36c;letter-spacing:.08em;margin-bottom:8px}
 .date-wrap{display:flex;align-items:center;gap:8px}
+.name-calculation{margin-top:10px;display:grid;gap:8px}
+.name-field{
+  width:100%;height:42px;border-radius:14px;border:1px solid rgba(231,198,106,.58);
+  background:linear-gradient(180deg,#140e0a,#0b0705);
+  color:#fff5dc;padding:0 18px;font:15px system-ui,sans-serif;letter-spacing:.04em;outline:none;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.42),0 0 18px rgba(231,198,106,.07)
+}
+#dob,
+.name-field{
+  transition:border-color .2s ease,box-shadow .2s ease
+}
 #dob{
   flex:1;height:44px;border-radius:14px;border:1px solid var(--gold);
   background:linear-gradient(180deg,#140e0a,#0b0705);
   color:#fff5dc;padding:0 18px;font-size:15px;letter-spacing:.12em;outline:none;
   box-shadow:inset 0 0 18px rgba(0,0,0,.42),0 0 18px rgba(231,198,106,.07)
 }
+#dob:focus,.name-field:focus{
+  border-color:#f1d47d;
+  box-shadow:0 0 0 2px rgba(231,198,106,.12),inset 0 0 18px rgba(0,0,0,.42)
+}
+.name-results{
+  margin-top:10px;padding:9px 12px;border-top:1px solid rgba(231,198,106,.25);
+  color:#e0cfaa;font:14px/1.55 system-ui,sans-serif;text-align:left
+}
+.name-result-value{color:#f1cf73;font-weight:800}
 .calc{
   height:44px;padding:0 18px;border:1px solid var(--gold);
   border-radius:14px;background:linear-gradient(180deg,#e6c363,#9b7228);
@@ -251,6 +271,8 @@ h1{
   .input-block{width:100%;max-width:350px;margin-top:14px}
   .date-wrap{gap:7px}
   #dob{min-width:0;height:44px;font-size:17px;padding:0 12px}
+  .name-field{height:44px;font-size:16px;padding:0 12px}
+  .name-results{font-size:14px;padding-left:8px;padding-right:8px}
   .calc{height:44px;padding:0 11px;font-size:12px}
   .title{font-size:15px;margin:14px 0 8px}
   .title:before,.title:after{width:42px;margin:0 7px}
@@ -363,6 +385,14 @@ h1{
       <div class="date-wrap">
         <input id="dob" type="text" inputmode="numeric" maxlength="10" placeholder="ДД.ММ.ГГГГ" autocomplete="off">
         <button class="calc" id="calcBtn" type="button">Рассчитать</button>
+      </div>
+      <div class="name-calculation">
+        <input class="name-field" id="firstName" type="text" placeholder="Имя" autocomplete="given-name">
+        <input class="name-field" id="lastName" type="text" placeholder="Фамилия" autocomplete="family-name">
+      </div>
+      <div class="name-results" aria-live="polite">
+        <div>Энергия имени — <span class="name-result-value" id="firstNameEnergy">—</span></div>
+        <div>Энергия фамилии — <span class="name-result-value" id="lastNameEnergy">—</span></div>
       </div>
     </div>
   </header>
@@ -596,6 +626,42 @@ dob.addEventListener('input', () => {
   dob.value = v;
   updateYearForecast();
 });
+
+const firstName = document.getElementById('firstName');
+const lastName = document.getElementById('lastName');
+const firstNameEnergy = document.getElementById('firstNameEnergy');
+const lastNameEnergy = document.getElementById('lastNameEnergy');
+
+const LETTER_ENERGY = {
+  // Русский алфавит
+  'А':22,'Б':1,'В':2,'Г':3,'Ч':3,'Д':4,'Е':5,'Ё':5,'Э':5,
+  'Ж':6,'З':6,'И':7,'Й':7,'К':8,'Л':9,'М':10,'Н':11,'О':12,
+  'П':13,'Р':14,'С':15,'Ц':15,'Т':16,'У':17,'Ф':18,'Х':18,
+  'Ш':19,'Щ':19,'Ъ':20,'Ы':20,'Ь':20,'Ю':21,'Я':21,
+
+  // Английский алфавит
+  'A':22,'B':1,'C':2,'D':3,'E':4,'F':5,'G':6,'H':7,'I':8,
+  'J':9,'K':10,'L':11,'M':12,'N':13,'O':14,'U':14,'Q':14,
+  'P':15,'R':16,'S':17,'T':18,'W':19,'V':19,'X':20,'Y':20,'Z':21
+};
+
+function calculateNameEnergy(value){
+  const letters = Array.from(value.trim().toUpperCase());
+  const energies = letters
+    .filter(letter => Object.prototype.hasOwnProperty.call(LETTER_ENERGY, letter))
+    .map(letter => LETTER_ENERGY[letter]);
+
+  if(!energies.length) return '—';
+  return reduce22(energies.reduce((sum, energy) => sum + energy, 0));
+}
+
+function updateNameEnergies(){
+  firstNameEnergy.textContent = calculateNameEnergy(firstName.value);
+  lastNameEnergy.textContent = calculateNameEnergy(lastName.value);
+}
+
+firstName.addEventListener('input', updateNameEnergies);
+lastName.addEventListener('input', updateNameEnergies);
 
 const forecastYear = document.getElementById('forecastYear');
 const forecastEnergyCircle = document.getElementById('forecastEnergyCircle');
