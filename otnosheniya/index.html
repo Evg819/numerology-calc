@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Ccircle cx=%2732%27 cy=%2732%27 r=%2728%27 fill=%27%23101513%27 stroke=%27%23c6a66a%27 stroke-width=%274%27/%3E%3Ctext x=%2732%27 y=%2743%27 text-anchor=%27middle%27 font-size=%2734%27 fill=%27%23c6a66a%27 font-family=%27Georgia%27%3E%E2%99%A5%3C/text%3E%3C/svg%3E">
+<title>Калькулятор совместимости</title>
+<style>
+:root{color-scheme:dark;--bg:#101513;--panel:#1a211e;--line:#3b493f;--gold:#c6a66a;--text:#f4f0e7;--muted:#b4b9b1;--green:#25372d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -15%,#344238 0,transparent 55%),var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100vh;padding:36px 18px}
+main{max-width:900px;margin:0 auto}header{text-align:center;margin:0 auto 28px}.brand{color:var(--gold);font:500 15px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.08em;text-transform:uppercase;margin:0 0 10px}h1{font-family:Georgia,serif;font-weight:400;letter-spacing:.04em;font-size:clamp(30px,5vw,46px);margin:0 0 8px}.lead{color:var(--muted);margin:0}
+.people{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card,.results{border:1px solid var(--line);border-radius:16px;background:linear-gradient(145deg,rgba(36,47,40,.96),rgba(23,29,26,.98));padding:22px}.card h2,.results h2{font-size:18px;font-weight:500;margin:0 0 14px;color:var(--gold)}label{display:block;color:var(--muted);font-size:14px;margin-bottom:8px}input{width:100%;padding:13px 14px;border:1px solid #566155;border-radius:9px;background:#111714;color:var(--text);font:inherit;accent-color:var(--gold)}button{display:block;width:100%;margin:20px 0 0;padding:14px;border:0;border-radius:9px;background:var(--gold);color:#171812;font:600 16px system-ui;cursor:pointer}button:hover{background:#d5b77d}button:focus-visible,input:focus-visible,.details-link:focus-visible{outline:2px solid #f0d49a;outline-offset:2px}.error{color:#ffd0c7;min-height:24px;margin:10px 0 0}.results{margin-top:20px;display:none}.results.show{display:block}.results h2{text-align:center;margin-bottom:18px}.classification{margin:0 auto;max-width:720px;color:var(--text)}.classification h3{margin:22px 0 8px;color:var(--gold);font:500 21px Georgia,serif}.classification h3:first-child{margin-top:0}.classification h4{margin:16px 0 5px;color:var(--gold-light);font-size:16px}.classification p{margin:6px 0 12px;line-height:1.65}.result-block{margin:16px 0;padding:18px;border:1px solid rgba(198,166,106,.35);border-radius:12px;background:rgba(10,14,12,.34)}.result-block:first-child{margin-top:0}.result-block p:first-child{margin-top:0;color:var(--gold);font:500 20px Georgia,serif}.result-block p:last-child{margin-bottom:0}.intro-block{border-color:rgba(198,166,106,.22);background:rgba(255,255,255,.035)}.mission{margin:24px 0 0;padding-top:18px;border-top:1px solid var(--line);text-align:center;color:var(--gold-light);font:500 22px Georgia,serif}.details-link{display:block;width:min(100%,420px);margin:18px auto 0;padding:14px 18px;border-radius:9px;background:var(--gold);color:#171812;text-align:center;text-decoration:none;font:600 16px system-ui}.details-link:hover{background:#d5b77d}.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:620px){body{padding:24px 14px}.people{grid-template-columns:1fr}.card,.results{padding:18px}}
+</style>
+</head>
+<body>
+<main>
+<header><p class="brand">Нумеролог Женя Абдуллина</p><h1>Совместимость пары</h1><p class="lead">Введите даты рождения обоих партнёров</p></header>
+<form id="form" novalidate>
+<div class="people">
+<section class="card"><h2>Она</h2><label for="dateA">Дата рождения</label><input id="dateA" type="text" inputmode="numeric" autocomplete="bday" maxlength="10" placeholder="19.10.1980" required></section>
+<section class="card"><h2>Он</h2><label for="dateB">Дата рождения</label><input id="dateB" type="text" inputmode="numeric" autocomplete="bday" maxlength="10" placeholder="19.10.1980" required></section>
+</div>
+<button type="submit">Рассчитать совместимость</button>
+<p class="error" id="error" role="alert"></p>
+</form>
+<section class="results" id="results" aria-live="polite">
+<h2 id="resultTitle">Результат вашей совместимости</h2>
+<div class="classification" id="classification" aria-live="polite"></div>
+<p class="mission" id="missionPair"></p>
+<a class="details-link" href="https://t.me/numerolog_Abdullina/3649" target="_blank" rel="noopener">Узнать подробнее про ваши отношения</a>
+</section>
+</main>
+<script>
+const keys = ['day','month','year','four','seven'];
+function to22(value){while(value>22)value-=22;return value}
+function formatDateInput(value){
+  const digits=value.replace(/\D/g,'').slice(0,8);
+  if(digits.length<=2)return digits;
+  if(digits.length<=4)return `${digits.slice(0,2)}.${digits.slice(2)}`;
+  return `${digits.slice(0,2)}.${digits.slice(2,4)}.${digits.slice(4)}`;
+}
+function readDate(value){
+  const match=value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if(!match)return null;
+  const day=Number(match[1]), month=Number(match[2]), year=Number(match[3]);
+  const date=new Date(year,month-1,day);
+  if(date.getFullYear()!==year||date.getMonth()!==month-1||date.getDate()!==day)return null;
+  return {day,month,year};
+}
+function positions(dateString){
+  const parsed=readDate(dateString);
+  if(!parsed)return null;
+  const {year,month,day}=parsed;
+  const one=to22(day), two=month, three=to22(String(year).split('').reduce((sum,digit)=>sum+Number(digit),0));
+  const four=to22(one+two), seven=to22(one+two+three);
+  return {day:one,month:two,year:three,four,seven};
+}
+const karmicIntro="Вы находитесь в Кармических отношениях.\nКармические партнёры — это не случайные люди. Это Души, которые любят нас настолько, что согласились играть роли «злодеев» и «мучителей», чтобы мы могли расти.\nКогда вы осознаёте это, вы перестаёте быть жертвой. Вы понимаете, что карма — это не приговор. Это **инструмент вашей эволюции**.\nИ в момент, когда урок усвоен, энергетический узел развязывается. Вы становитесь свободным. И тогда — только тогда — вы готовы к переходу на новый уровень.";
+const descriptions={
+  8:{group:'karmic',text:"**8 - карма справедливости.**\nПартнёров связывает кармический долг. Который возник, ещё в прошлых воплощениях. Ваши Души знакомы уже не первое воплощение. В прошлом, в ваших отношениях были нарушены: честность, верность или данные обещания. Это могло быть предательство, измена, обида, не прощение. Вы оба нарушили обещание данное друг другу. Либо кто-то из вас это сделать. И в этом воплощение вы у друг друга в долгу. Вы встретились чтобы пройти ваш урок вмести и дойти до миссии, которая прописана Судьбой на это воплощение.\n**Это не говорит о том, что вы обязаны оставаться вместе не смотря ни на что. Вы можете в итоге расстаться. Но важно правильно выходить из таких отношений. А как именно, важно учитывать вашу личную программу и вашу совместимость с этим партнёром в том числе.**\n**Если выход из кармических отношений происходит не корректный, то чаще всего в следующих отношениях ничего не складывается.**"},
+  10:{group:'karmic',text:"**10 – карма финансов и понимания друг друга.**\nВ этих отношениях испытания чаще всего проходят через финансовые вопросы. Если в отношениях нет понимания и уважения, то это чаще всего отражается на деньгах. Возникают какие-то проблемы, где нужно срочно куда-то что-то заплатить. Либо происходят финансовые кризисы. Так же в этим отношениях партнёры не понимают что другому надо. Им сложно понять и услышать друг друга. Но ваша встреча произошла не просто так. Поэтому тут важно осознать для чего и зачем вы встретились.\n**Это не говорит о том, что вы обязаны оставаться вместе не смотря ни на что. Вы можете в итоге расстаться. Но важно правильно выходить из таких отношений. А как именно, важно учитывать вашу личную программу и вашу совместимость с этим партнёром в том числе.**\n**Если выход из кармических отношений происходит не корректный, то чаще всего в следующих отношениях ничего не складывается.**"},
+  20:{group:'karmic',text:"**20- родовая карма.**\nВаши отношения связаны родовой кармой и семейными программами. Вы встретились, чтобы создать семью и закрыть кармический долг рода. На этом пути всегда возникают сложности в семейной жизни. Важно замечать, какие родовые сценарии проявляются в паре, что происходит так же как у вашей например мамы или бабушке. И переписыватьэтот сценарий. Ваша задача создать крепкую семью, где есть уважение и любовь.\nЭто одни из кармических союзов, когда развод считается не пройденным уроком для ваших душ. И может предаваться вашим потомкам. Поэтому самое лучше будет, это запустить изменения через себя. А именно, научитесь понимать в первую очередь себя и станьте настоящей. Все изменения начинаются с вас."},
+  13:{group:'difficult',text:"**13 - одна из самых сложных совместимостей.**\nУ вас будут периоды, когда нужно будет либо поставить точку и идти дальше. Либо простить, понять  и принять партнёра.  Но тут нужно быть очень аккуратными, т.к. эти отношения без понимания себя и своей личной программы, способны вас вымотать и вы просто потухните."},
+  16:{group:'difficult',text:"**16 - ваши отношения не простые, потому что они не про стабильность.**\nУ вас 2 пути. 1- либо вы постоянно растёте через эти отношения. Занимаетесь саморазвитие, прорабатываете свою ценность. Умеете отстаивать свои границы. И также уважительно относитесь к своему парнёру. И тогда выход на новый уровень во всех сферах вам обеспечен. И в реализации, и в деньгах, и в отношениях. 2- либо вы разрушите себя ради партнёра. Боитесь идти в перемены. И цепляетесь за старое, то что уже не приносит вам радости."}
+};
+function addFormattedCopy(parent,text){
+ for(const block of text.split('\n')){
+   if(!block.trim()) continue;
+   const paragraph=document.createElement('p');
+   const parts=block.split('**');
+   parts.forEach((part,index)=>{
+     if(!part)return;
+     if(index%2){const strong=document.createElement('strong');strong.textContent=part;paragraph.append(strong)}
+     else paragraph.append(document.createTextNode(part));
+   });
+   parent.append(paragraph);
+ }
+}
+for(const input of [document.getElementById('dateA'),document.getElementById('dateB')]){
+ input.addEventListener('input',()=>{
+   input.value=formatDateInput(input.value);
+ });
+}
+document.getElementById('form').addEventListener('submit',event=>{
+ event.preventDefault();
+ const a=document.getElementById('dateA').value,b=document.getElementById('dateB').value;
+ const error=document.getElementById('error'),box=document.getElementById('results');
+ if(!a||!b){error.textContent='Укажите обе даты рождения.';box.classList.remove('show');return}
+ const pa=positions(a),pb=positions(b);
+ if(!pa||!pb){error.textContent='Введите дату в формате 19.10.1980.';box.classList.remove('show');return}
+ error.textContent='';
+ const compatibility=keys.map(key=>to22(pa[key]+pb[key]));
+ const found=[...new Set(compatibility.filter(value=>descriptions[value]))];
+ const content=document.getElementById('classification');content.replaceChildren();
+ if(!found.length){
+   const paragraph=document.createElement('p');paragraph.textContent='Как же вам повезло: у вас нет кармических отношений, а значит, наладить их будет намного проще.';content.append(paragraph);
+ }else{
+   if(found.some(value=>descriptions[value].group==='karmic')){
+     const intro=document.createElement('section');intro.className='result-block intro-block';addFormattedCopy(intro,karmicIntro);content.append(intro);
+   }
+   for(const value of found){
+     const block=document.createElement('article');block.className='result-block';addFormattedCopy(block,descriptions[value].text);content.append(block);
+   }
+ }
+ document.getElementById('resultTitle').textContent='Результат вашей совместимости';
+ document.getElementById('missionPair').textContent=`Миссия пары — ${compatibility[4]}.`;
+ box.classList.add('show');
+});
+</script>
+<script type="module">import { mountSiteWidget } from "/_sites/dispatch-assets/sites-widget.js";mountSiteWidget({"kind":"editor-composer","mobileEnabled":false,"environment":"production","chatgptOrigin":"https://chatgpt.com","locale":"ru-RU","accountId":"personal","projectId":"appgprj_6ab67432e9a88191aaea44d2c8de842e","projectTitle":"Совместимость пары"});</script><script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4446a02fafb5fc4',t:'MTc5MDk1MTUyMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
